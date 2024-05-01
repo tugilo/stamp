@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrganizerController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\LiffController;
 
 /*
 |--------------------------------------------------------------------------
