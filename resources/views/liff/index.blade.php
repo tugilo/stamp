@@ -1,27 +1,63 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>LIFF App</title>
-    <!-- LIFF SDKの読み込み -->
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-</head>
-<body>
-    <h1>LIFF App</h1>
+@extends('layouts.liff')
 
-    <!-- ニックネーム登録フォーム（初期状態では非表示） -->
-    <div id="nickname-form" style="display: none;">
-        <label for="nickname">ニックネーム:</label>
-        <input type="text" id="nickname" name="nickname" required>
-        <button id="submit-nickname">登録</button>
+@section('css')
+<style>
+    .breadcrumb {
+        background: #caedfd;
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+    }
+
+    .breadcrumb a {
+        color: #000;
+    }
+
+    .breadcrumb-item.active {
+        color: #fff;
+    }
+
+    .breadcrumb-item+.breadcrumb-item::before {
+        color: #000;
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h2 class="card-title mb-0"><i class="fas fa-stamp me-2"></i>スタンプラリーに登録します</h2>
+                </div>
+                <div class="card-body">
+                    <form class="form-horizontal" method="POST" action="{{ route('liff.store') }}">
+                        @csrf
+                        <div class="mb-3 row">
+                            <label for="name" class="col-sm-2 col-form-label">ニックネーム</label>
+                            <div class="col-sm-10">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input id="nickname" type="text" name="nickname" class="form-control" value="{{ old('nickname') }}" placeholder="ニックネーム" autofocus required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <div class="col-md-8 offset-md-2">
+                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-check me-2"></i>登録する</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
+@endsection
 
-    <!-- 登録済みメッセージ（初期状態では非表示） -->
-    <div id="registered-message" style="display: none;">
-        <p>既に登録されています。</p>
-    </div>
-
+@section('js')
+    <!-- Bootstrap5 JSの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // 必要な要素の取得
@@ -88,8 +124,8 @@
                         },
                         body: JSON.stringify({uid: uid, nickname: nickname})
                     }).then(function (response) {
-                        // 登録完了後の処理
-                        window.location.href = '/liff/registered';
+                        // 登録完了後、LIFFのビューにリダイレクトしてUIDを渡す
+                        window.location.href = '/liff?uid=' + uid;
                     }).catch(function (error) {
                         console.error('Error:', error);
                     });
@@ -99,5 +135,4 @@
             });
         });
     </script>
-</body>
-</html>
+@endsection
