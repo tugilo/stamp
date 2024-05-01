@@ -19,27 +19,33 @@ use App\Http\Controllers\LiffController;
 |
 */
 
+// ホームページへのルート
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// 認証ルート（ログイン、ログアウト、登録など）
 Auth::routes();
 
+// ホームページへの再定義ルート
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// ユーザー管理用ルート
+// ユーザー管理用ルート（CRUD操作）
 Route::resource('users', UserController::class)->except(['show']);
-// 主催者管理用ルート
+
+// 主催者管理用ルート（CRUD操作）
 Route::resource('organizers', OrganizerController::class);
 
-// 会場管理用ルート
+// 会場管理用ルート（CRUD操作）
 Route::resource('venues', VenueController::class);
 
-// イベント管理用ルート
+// イベント管理用ルート（CRUD操作）
 Route::resource('events', EventController::class);
 
-// LIFF用ルート
-Route::get('/liff', 'LiffController@index');
-Route::post('/liff', 'LiffController@store');
-Route::post('/liff/check', 'LiffController@check');
+// LIFF用ルート（LINE Front-end Framework）
+Route::get('/liff', [LiffController::class, 'index'])->name('liff.index');
+Route::post('/liff', [LiffController::class, 'store'])->name('liff.store');
+Route::post('/liff/check', [LiffController::class, 'check'])->name('liff.check');
+
+// LIFF登録完了ページ
 Route::get('/liff/registered', function () {
     return view('liff.registered');
-});
+})->name('liff.registered');
