@@ -34,3 +34,11 @@ Route::resource('venues', VenueController::class);
 
 // イベント管理用ルート
 Route::resource('events', EventController::class);
+
+// LIFF用ルート
+Route::get('/liff', 'LiffController@index');
+Route::post('/liff', 'LiffController@store');
+Route::post('/liff/check', 'LiffController@check');
+Route::get('/liff/registered', function () {
+    return view('liff.registered');
+});
