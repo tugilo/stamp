@@ -25,10 +25,8 @@
 </head>
 <body class="home">
     <header class="header d-flex flex-wrap align-items-center justify-content-between py-4 px-3">
-        <div class="logo mx-auto">
-            <a href="#" rel="home">
-                <img class="img-fluid" src="/images/logo.png" alt="スタンプラリー">
-            </a>
+        <div class="logo mx-auto mb-2">
+            &nbsp;<br>
         </div>
     </header>
     @yield('content')

@@ -35,6 +35,15 @@
                     @enderror
                 </div>
                 <div class="form-group">
+                    <label for="contact_person">担当者</label>
+                    <input type="text" name="contact_person" id="contact_person" class="form-control" value="{{ old('contact_person', $event->contact_person ?? '') }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact_info">問い合わせ連絡先</label>
+                    <input type="text" name="contact_info" id="contact_info" class="form-control" value="{{ old('contact_info', $event->contact_info ?? '') }}">
+                </div>
+                <div class="form-group">
                     <label for="venue_id">会場</label>
                     <select name="venue_id" id="venue_id" class="form-control @error('venue_id') is-invalid @enderror" required>
                         <option value="">選択してください</option>
@@ -86,6 +95,10 @@
                     @enderror
                 </div>
                 <div class="form-group">
+                    <label for="end_date">終了日</label>
+                    <input type="date" name="end_date" id="end_date" class="form-control">
+                </div>
+                <div class="form-group">
                     <label for="start_time">開始時間</label>
                     <input type="time" name="start_time" id="start_time" class="form-control @error('start_time') is-invalid @enderror" value="{{ old('start_time') }}" required>
                     @error('start_time')
@@ -122,15 +135,6 @@
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label for="code">コード</label>
-                    <input type="text" name="code" id="code" class="form-control @error('code') is-invalid @enderror" value="{{ old('code') }}" maxlength="4" required>
-                    @error('code')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                </div>
-                <div class="form-group">
                     <label for="stamp_count">スタンプ数</label>
                     <input type="number" name="stamp_count" id="stamp_count" class="form-control @error('stamp_count') is-invalid @enderror" value="{{ old('stamp_count', 1) }}" min="1" required>
                     @error('stamp_count')
@@ -139,6 +143,16 @@
                         </span>
                     @enderror
                 </div>
+                <div class="form-group">
+                    <label for="survey_url">アンケートURL</label>
+                    <input type="url" name="survey_url" id="survey_url" class="form-control @error('survey_url') is-invalid @enderror" value="{{ old('survey_url', $event->survey_url ?? '') }}">
+                    @error('survey_url')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+                
                 <button type="submit" class="btn btn-primary">登録</button>
             </form>
         </div>

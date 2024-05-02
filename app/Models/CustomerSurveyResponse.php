@@ -73,9 +73,20 @@ class CustomerSurveyResponse extends Model
      */
     public function setInfoCategoryIdsAttribute($value)
     {
-        $this->attributes['info_category_ids'] = implode(',', $value);
+        // 値が文字列の場合、カンマで分割して配列に変換
+        if (is_string($value)) {
+            $value = explode(',', $value);
+        }
+    
+        // 値が配列の場合のみimplodeを使用
+        if (is_array($value)) {
+            $this->attributes['info_category_ids'] = implode(',', $value);
+        } else {
+            // 配列でも文字列でもない場合は、ログを出力してデバッグ
+            Log::warning('Unexpected type for info_category_ids', ['value' => $value]);
+        }
     }
-
+    
     /**
      * info_category_ids 属性のゲッター
      * データベースにカンマ区切りの文字列として保存されている値を配列に変換して返す

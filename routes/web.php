@@ -42,11 +42,14 @@ Route::resource('venues', VenueController::class);
 Route::resource('events', EventController::class);
 
 Route::get('/liff', [LiffController::class, 'index'])->name('liff.index');
-Route::post('/liff', [LiffController::class, 'store'])->name('liff.store');
+Route::post('/liff/init', [LiffController::class, 'initializeLiff']);
 Route::post('/liff/check', [LiffController::class, 'check'])->name('liff.check');
+Route::post('/liff/store', [LiffController::class, 'store'])->name('liff.store');
+// 'customer_id'パラメータを含むようにルートを調整
 Route::get('/liff/survey', [LiffController::class, 'showSurvey'])->name('liff.survey.show');
 Route::post('/liff/survey', [LiffController::class, 'storeSurvey'])->name('liff.survey.store');
-Route::get('/liff/stamp', 'StampController@index')->name('liff.stamp.index');
-Route::post('/liff/stamp', 'StampController@store')->name('liff.stamp.store');
-Route::post('/liff/stamp/apply-prize-4', 'StampController@applyPrize4')->name('liff.stamp.applyPrize4');
-Route::post('/liff/stamp/apply-prize-9', 'StampController@applyPrize9')->name('liff.stamp.applyPrize9');
+// スタンプコントローラのルート設定を更新
+Route::get('/liff/stamp', [StampController::class, 'index'])->name('liff.stamp.index');
+Route::post('/liff/stamp', [StampController::class, 'store'])->name('liff.stamp.store');
+Route::post('/liff/stamp/apply-prize-4', [StampController::class, 'applyPrize4'])->name('liff.stamp.applyPrize4');
+Route::post('/liff/stamp/apply-prize-9', [StampController::class, 'applyPrize9'])->name('liff.stamp.applyPrize9');

@@ -15,6 +15,10 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
+    <!-- Custom styles -->
+    @stack('css') <!-- ここにスタイルシートスタックを追加 -->
+
 </head>
 <body>
     <div id="app">
@@ -76,5 +80,9 @@
             @yield('content')
         </main>
     </div>
+
+    <!-- Custom scripts -->
+    @stack('js') <!-- ここにJavaScriptスクリプトスタックを追加 -->
+
 </body>
 </html>

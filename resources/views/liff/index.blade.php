@@ -31,20 +31,18 @@
                     <h2 class="card-title mb-0"><i class="fas fa-stamp me-2"></i>スタンプラリーに登録します</h2>
                 </div>
                 <div class="card-body">
-                    <form class="form-horizontal" method="POST" action="{{ route('liff.store') }}">
+                    <!-- フォームは最初は非表示 -->
+                    <form id="nickname-form" class="form-horizontal" method="POST" action="{{ route('liff.store') }}" style="display:none;">
                         @csrf
                         <div class="mb-3 row">
-                            <label for="name" class="col-sm-2 col-form-label">ニックネーム</label>
+                            <label for="nickname" class="col-sm-2 col-form-label">ニックネーム</label>
                             <div class="col-sm-10">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                    <input id="nickname" type="text" name="nickname" class="form-control" value="{{ old('nickname') }}" placeholder="ニックネーム" autofocus required>
-                                </div>
+                                <input type="text" class="form-control" id="nickname" name="nickname" placeholder="ニックネーム" required>
                             </div>
                         </div>
                         <div class="mb-3 row">
                             <div class="col-md-8 offset-md-2">
-                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-check me-2"></i>登録する</button>
+                                <button type="submit" class="btn btn-primary w-100">登録する</button>
                             </div>
                         </div>
                     </form>
@@ -56,83 +54,71 @@
 @endsection
 
 @section('js')
-    <!-- Bootstrap5 JSの読み込み -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // 必要な要素の取得
-            const nicknameForm = document.getElementById('nickname-form');
-            const nicknameInput = document.getElementById('nickname');
-            const submitNicknameButton = document.getElementById('submit-nickname');
-            const registeredMessage = document.getElementById('registered-message');
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // LIFFの初期化
+    liff.init({ liffId: '{{ env('LIFF_ID') }}' }).then(function () {
+        if (!liff.isLoggedIn()) {
+            liff.login();
+        }
+        liff.getProfile().then(function (profile) {
+            const uid = profile.userId;
+            checkRegistration(uid); // 登録状態のチェック
+        });
+    });
 
-            // LIFFの初期化
-            liff.init({
-                liffId: '2004771210-Ye3bejAv' // 自分のLIFF IDに置き換えてください
-            }).then(function () {
-                // ログインしていない場合はLIFFログインを実行
-                if (!liff.isLoggedIn()) {
-                    liff.login();
+    // UIDに基づいて登録状態をチェック
+    function checkRegistration(uid) {
+        fetch('/liff/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ uid: uid })
+        }).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            if (data.registered) {
+                // 登録済みの場合、info_flgをチェックしてアンケート未回答ならアンケートページへ、回答済みならスタンプページへ遷移
+                if (data.info_flg === 0) {
+                    window.location.href = '/liff/survey?customer_id=' + data.customerId;
+                } else {
+                    window.location.href = '/liff/stamp?customer_id=' + data.customerId;
                 }
+            } else {
+                // 未登録の場合、ニックネーム登録フォームを表示
+                document.getElementById('nickname-form').style.display = 'block';
+            }
+        });
+    }
 
-                // ユーザープロファイルの取得
-                liff.getProfile().then(function (profile) {
-                    const uid = profile.userId;
+    // ニックネーム登録フォームの送信イベント
+    document.getElementById('nickname-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const nickname = document.getElementById('nickname').value;
+        registerUser(nickname);
+    });
 
-                    // 登録状態をチェックするためにサーバーにリクエストを送信
-                    fetch('/liff/check', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({uid: uid})
-                    }).then(function (response) {
-                        return response.json();
-                    }).then(function (data) {
-                        if (data.registered) {
-                            // 登録済みの場合は登録済みメッセージを表示
-                            registeredMessage.style.display = 'block';
-                        } else {
-                            // 未登録の場合はニックネーム登録フォームを表示
-                            nicknameForm.style.display = 'block';
-                        }
-                    }).catch(function (error) {
-                        console.error('Error:', error);
-                    });
-                }).catch(function (error) {
-                    console.error('Error:', error);
-                });
-            }).catch(function (error) {
-                console.error('LIFF initialization failed:', error);
-            });
-
-            // ニックネーム登録フォームの送信イベント
-            submitNicknameButton.addEventListener('click', function () {
-                const nickname = nicknameInput.value;
-
-                // ユーザープロファイルの取得
-                liff.getProfile().then(function (profile) {
-                    const uid = profile.userId;
-
-                    // ニックネームとUIDをサーバーに送信
-                    fetch('/liff', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({uid: uid, nickname: nickname})
-                    }).then(function (response) {
-                        // 登録完了後、LIFFのビューにリダイレクトしてUIDを渡す
-                        window.location.href = '/liff?uid=' + uid;
-                    }).catch(function (error) {
-                        console.error('Error:', error);
-                    });
-                }).catch(function (error) {
-                    console.error('Error:', error);
-                });
+    // ユーザー登録
+    function registerUser(nickname) {
+        liff.getProfile().then(function (profile) {
+            const uid = profile.userId;
+            fetch('/liff/store', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ uid: uid, nickname: nickname })
+            }).then(function (response) {
+                // 登録完了後、アンケートページへ遷移
+                window.location.href = '/liff/survey?uid='+uid;
             });
         });
-    </script>
+    }
+});
+</script>
 @endsection

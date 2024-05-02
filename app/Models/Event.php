@@ -24,6 +24,30 @@ class Event extends Model
     }
 
     /**
+     * このイベントの開催会場
+     */
+    public function venue()
+    {
+        return $this->belongsTo(Venue::class, 'venue_id');
+    }
+
+    /**
+     * このイベントが開催されるエリア
+     */
+    public function area()
+    {
+        return $this->belongsTo(Area::class, 'area_id');
+    }
+
+    /**
+     * このイベントが開催される都市
+     */
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    /**
      * このイベントに参加した顧客情報
      */
     public function participants()

@@ -22,6 +22,10 @@ class Customer extends Model
     {
         return $this->hasManyThrough(Event::class, CustomerPresent::class, 'customer_id', 'id', 'id', 'event_id');
     }
+    public function eventParticipations()
+    {
+        return $this->hasMany(EventParticipation::class);
+    }
 
     /**
      * 顧客が受け取ったプレゼントに関するリレーション

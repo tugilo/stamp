@@ -36,26 +36,28 @@ class EventController extends Controller
             'area_id' => 'required|exists:areas,id',
             'city_id' => 'required|exists:cities,id',
             'event_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:event_date', // 終了日のバリデーション
             'start_time' => 'required',
             'end_time' => 'required|after:start_time',
             'description' => 'nullable|string',
             'announcement_url' => 'nullable|url',
-            'code' => 'required|string|max:4',
             'stamp_count' => 'required|integer|min:1',
         ]);
-
-        Event::create($request->all());
-
+    
+        $code = $this->generateUniqueCode();
+        $event = new Event($request->all() + ['code' => $code]);
+        $event->save();
+    
         return redirect()->route('events.index')->with('success', '新しいイベントが登録されました。');
     }
-
+    
     public function edit(Event $event)
     {
         $organizers = Organizer::all();
         $venues = Venue::all();
-        $areas = Area::activeOrdered()->get(); // スコープを使用して並べ替え
-        $cities = City::activeOrdered()->get(); // スコープを使用して並べ替え
-    
+        $areas = Area::activeOrdered()->get();
+        $cities = City::activeOrdered()->get();
+
         return view('events.edit', compact('event', 'organizers', 'venues', 'areas', 'cities'));
     }
 
@@ -68,6 +70,7 @@ class EventController extends Controller
             'area_id' => 'required|exists:areas,id',
             'city_id' => 'required|exists:cities,id',
             'event_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:event_date', // 終了日のバリデーション
             'start_time' => 'required',
             'end_time' => 'required|after:start_time',
             'description' => 'nullable|string',
@@ -86,5 +89,23 @@ class EventController extends Controller
         $event->delete();
 
         return redirect()->route('events.index')->with('success', 'イベントが削除されました。');
+    }
+
+    /**
+     * Generate a unique numeric event code.
+     *
+     * @param int $length
+     * @return string
+     */
+    protected function generateUniqueCode($length = 4)
+    {
+        do {
+            $code = '';
+            for ($i = 0; $i < $length; $i++) {
+                $code .= mt_rand(0, 9);
+            }
+        } while (Event::where('code', $code)->exists()); // Ensure the code is unique
+
+        return $code;
     }
 }

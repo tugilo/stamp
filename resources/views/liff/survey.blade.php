@@ -22,7 +22,6 @@
                 <div class="card-body bg-white">
                     <p class="text-danger text-right">※スタンプラリーの前に簡単なアンケートにご協力ください</p>
                     <input type="hidden" id="customer_id" name="customer_id" value="{{ $customer->id }}">
-                    <input type="hidden" id="nickname" name="nickname" value="{{ $customer->nickname }}">
 
                     <!-- 性別 -->
                     <div class="form-group row">
