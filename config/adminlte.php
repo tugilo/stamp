@@ -64,11 +64,13 @@ return [
     */
 
     'logo' => 'スタンプラリー',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+//    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo_img' => 'images/stamp_icon.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'Admin Logo',
+//    'logo_img_alt' => 'Admin Logo',
+    'logo_img_alt' => 'スタンプラリー管理システム',
 
     /*
     |--------------------------------------------------------------------------
@@ -86,8 +88,10 @@ return [
     'auth_logo' => [
         'enabled' => false,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'Auth Logo',
+//            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'images/stamp_icon.png',
+//            'alt' => 'Auth Logo',
+            'alt' => 'スタンプラリー管理システム',
             'class' => '',
             'width' => 50,
             'height' => 50,
@@ -113,8 +117,10 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'AdminLTE Preloader Image',
+//            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'images/stamp_icon.png',
+//            'alt' => 'AdminLTE Preloader Image',
+            'alt' => 'スタンプラリー管理システム',
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,

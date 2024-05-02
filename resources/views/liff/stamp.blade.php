@@ -28,7 +28,7 @@
 @section('content')
 <main class="main">
     <div class="container">
-        <div class="stamp-rally mt-1">
+        <div class="stamp-rally mt-4">
             <div class="message-container">
                 @if(session('error'))
                     <div class="alert alert-danger">
@@ -70,11 +70,11 @@
 
             <div class="text-center mt-2">
                 <!-- プレゼント応募ボタンの条件付き表示 -->
-                @if(isset($stamps[4]) && $stamps[4])
-                <button type="button" class="btn btn-success" id="btn-apply-prize-4">4つ目のプレゼントに応募する</button>
+                @if(isset($stamps[3]) && $stamps[3])
+                <button type="button" class="btn btn-success mb-4" id="btn-apply-prize-4">3つ目のプレゼントに応募する</button>
                 @endif
-                @if(isset($stamps[9]) && $stamps[9])
-                <button type="button" class="btn btn-success" id="btn-apply-prize-9">9つ目のプレゼントに応募する</button>
+                @if(isset($stamps[6]) && $stamps[6])
+                <button type="button" class="btn btn-success" id="btn-apply-prize-9">6つ目のプレゼントに応募する</button>
                 @endif
             </div>
         </div>

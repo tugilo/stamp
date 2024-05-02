@@ -22,6 +22,8 @@ use App\Http\Controllers\StampController;
 
 // ホームページへのルート
 Route::get('/', [HomeController::class, 'index'])->name('home');
+// HomeControllerを使ったイベントデータ取得のルート
+Route::get('/api/events', [HomeController::class, 'events'])->name('api.events');
 
 // 認証ルート（ログイン、ログアウト、登録など）
 Auth::routes();

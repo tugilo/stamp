@@ -22,11 +22,11 @@ class StampController extends Controller
         $customer = Customer::findOrFail($customerId);
     
         // 顧客のスタンプ数を取得
-        $stampCount = $customer->stamp_count;
+        $stampCount = min($customer->stamp_count, 6);  // 最大スタンプ数を6に制限
         Log::info('Received stampCount:', ['stampCount' => $stampCount]);
     
         // スタンプ状態の初期化
-        $stamps = collect(range(1, 9))->mapWithKeys(function ($number) use ($stampCount) {
+        $stamps = collect(range(1, 6))->mapWithKeys(function ($number) use ($stampCount) {
             return [$number => $number <= $stampCount];
         });
     
