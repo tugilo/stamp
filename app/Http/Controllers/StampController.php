@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Event;
 use App\Models\EventParticipation;
+use App\Models\Present;
+use App\Models\CustomerPresent;
+use App\Models\Zip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -85,34 +88,92 @@ class StampController extends Controller
     
         return redirect()->route('liff.stamp.index', ['customer_id' => $customerId]);
     }
+
     
     /**
-     * 4つ目のプレゼントに応募する処理
+     * プレゼント応募フォームを表示する
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\JsonResponse
      */
-    public function applyPrize4(Request $request)
+    public function applyPresentForm($customer_id, $syubetsu_id)
     {
-        $customerId = $request->input('customer_id');
+        $customer = Customer::findOrFail($customer_id);
+        $prefectures = Zip::getPrefectures();
 
-        // 4つ目のプレゼントに応募する処理を実装
+        // syubetsu_id に基づいてプレゼントを取得
+        $presents = Present::where('syubetsu_id', $syubetsu_id)->get();
 
-        return response()->json(['message' => '4つ目のプレゼントに応募しました']);
+        if ($presents->isEmpty()) {
+            Log::error('syubetsu_id に該当するプレゼントが見つかりません: ' . $syubetsu_id);
+            return redirect()->back()->with('error', 'このカテゴリーには利用可能なプレゼントがありません。');
+        }
+
+        Log::info('syubetsu_id に基づいて取得したプレゼント: ' . $syubetsu_id, ['presents' => $presents->toArray()]);
+
+        // 過去の応募データを取得
+        $previousApplication = CustomerPresent::where('customer_id', $customer_id)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('created_at')
+            ->first();
+
+ 
+        return view('liff.present', compact('customer', 'presents', 'prefectures', 'syubetsu_id', 'previousApplication'));
     }
 
-    /**
-     * 9つ目のプレゼントに応募する処理
+     /**
+     * スタンプ数に応じたプレゼント応募処理
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function applyPrize9(Request $request)
+    public function applyForPresent(Request $request)
     {
         $customerId = $request->input('customer_id');
-
-        // 9つ目のプレゼントに応募する処理を実装
-
-        return response()->json(['message' => '9つ目のプレゼントに応募しました']);
+        $syubetsuId = $request->input('syubetsu_id'); // 応募するプレゼントの種別ID
+    
+        $customer = Customer::findOrFail($customerId);
+    
+        // 応募条件を確認（スタンプ数が3以上か6以上か）
+        $requiredStamps = $syubetsuId == 1 ? 6 : 3;
+    
+        if ($customer->stamp_count < $requiredStamps) {
+            return back()->with('error', 'スタンプ数が足りません。');
+        }
+    
+        // 重複応募のチェック
+        if (CustomerPresent::where('customer_id', $customerId)->where('syubetsu_id', $syubetsuId)->exists()) {
+            return back()->with('error', 'このプレゼントにはすでに応募済みです。');
+        }
+    
+        // プレゼント応募データとフラグ更新
+        CustomerPresent::create([
+            'customer_id' => $customerId,
+            'syubetsu_id' => $syubetsuId,
+            'present_id' => $request->input('present_id'),
+            'name' => $request->input('name'),
+            'name_kana' => $request->input('name_kana'),
+            'tel' => $request->input('tel'),
+            'email' => $request->input('email'),
+            'zip' => $request->input('zip'),
+            'prefecture' => $request->input('prefecture'),
+            'city' => $request->input('city'),
+            'address' => $request->input('address'),
+            'building' => $request->input('building', ''),
+            'comment' => $request->input('comment', ''),
+            'applied_at' => now(),
+        ]);
+    
+        // フラグを更新
+        if ($syubetsuId == 1) {
+            $customer->update(['applied_for_a_prize' => 1]);
+        } else if ($syubetsuId == 2) {
+            $customer->update(['applied_for_b_prize' => 1]);
+        }
+    
+        return redirect()->route('liff.stamp.index', ['customer_id' => $customerId])->with('success', 'プレゼントに応募しました！');
     }
+    
+     
+
 }

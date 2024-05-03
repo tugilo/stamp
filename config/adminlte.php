@@ -344,7 +344,20 @@ return [
             'url'  => 'venues',
             'icon' => 'fas fa-fw fa-list',
         ],
-    
+        // プレゼント管理
+        [
+            'header' => 'プレゼント管理',
+        ],
+        [
+            'text' => '新規プレゼント登録',
+            'url' => 'presents/create',
+            'icon' => 'fas fa-gift',
+        ],
+        [
+            'text' => 'プレゼント一覧',
+            'url' => 'presents',
+            'icon' => 'fas fa-list',
+        ],    
         // ユーザー管理
         [
             'header' => 'ユーザー管理',
