@@ -9,6 +9,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\LiffController;
 use App\Http\Controllers\StampController;
 use App\Http\Controllers\PresentController;
+use App\Http\Controllers\SurveyResponseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,10 +43,19 @@ Route::resource('organizers', OrganizerController::class);
 Route::resource('venues', VenueController::class);
 
 // イベント管理用のCRUD操作ルート
-Route::resource('events', EventController::class);
+Route::resource('events', EventController::class)->except(['show']);
 
 // プレゼント管理用のCRUD操作ルート
 Route::resource('presents', PresentController::class);
+
+// アンケート結果の一覧表示ルート
+Route::get('/survey/index', [SurveyResponseController::class, 'index'])->name('survey.index');  // 認証が必要
+
+// イベントの参加者数を表示するためのルート
+Route::get('/events/participations', [EventController::class, 'showParticipations'])->name('events.participations');
+
+Route::get('/events/export', [EventController::class, 'export'])->name('events.export');
+
 
 // LIFFアプリのメインページルート
 Route::get('/liff', [LiffController::class, 'index'])->name('liff.index');

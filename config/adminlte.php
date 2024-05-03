@@ -299,6 +299,22 @@ return [
     |
     */
     'menu' => [
+
+        // 集計管理
+        [
+            'header' => '集計管理',
+        ],
+        [
+            'text' => 'アンケート結果一覧',
+            'url'  => 'survey/index', // アンケート結果一覧ページのURL
+            'icon' => 'fas fa-fw fa-poll',
+        ],
+        [
+            'text' => 'イベント参加者数',
+            'url'  => 'events/participations',
+            'icon' => 'fas fa-fw fa-users',
+        ],
+
         // イベント管理
         [
             'header' => 'イベント管理',

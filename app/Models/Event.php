@@ -14,7 +14,8 @@ class Event extends Model
 
     // Mass Assignmentから保護された属性
     protected $guarded = ['id'];
-
+    
+    protected $dates = ['event_date', 'end_date'];
     /**
      * このイベントを主催する組織
      */
@@ -48,9 +49,11 @@ class Event extends Model
     }
 
     /**
-     * このイベントに参加した顧客情報
+     * このイベントに関連する参加情報を取得します。
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function participants()
+    public function participations()
     {
         return $this->hasMany(EventParticipation::class, 'event_id');
     }
