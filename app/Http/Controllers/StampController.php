@@ -38,8 +38,8 @@ class StampController extends Controller
         return view('liff.stamp', compact('customer', 'stamps'));
     }
     
-
-     /**
+    
+    /**
      * スタンプを押す処理
      *
      * @param  \Illuminate\Http\Request  $request
@@ -47,49 +47,80 @@ class StampController extends Controller
      */
     public function store(Request $request)
     {
+        // 顧客IDとイベントコードをリクエストから取得
         $customerId = $request->input('customer_id');
         $eventCode = $request->input('event_code');
+
+        // リクエストデータをログに記録
+        Log::info('Received Request Data:', $request->all());
+
+        // イベントコードのバリデーションを行い、必須かつ数値であることを確認
         $validated = $request->validate([
             'event_code' => 'required|numeric',
         ], [
             'event_code.numeric' => '半角数字でご入力お願いします。',
             'event_code.required' => 'イベントコードは必須です。',
         ]);
-    
-        // イベントコードに対応するイベントを取得
-        $event = Event::where('code', $eventCode)->first();
-    
+
+        // イベントコードに基づいてイベント情報を取得
+        $event = Event::where('code', $eventCode)->where('show_flg', 1)->first();
         if (!$event) {
-            // イベントが見つからない場合、エラーメッセージをセッションに格納してリダイレクト
-            return redirect()->back()->with('error', 'イベントが終了しているか、存在しないコードです。');
+            // イベントが存在しないか、無効な場合はエラーメッセージを返す
+            Log::error('Invalid Event Code:', ['event_code' => $eventCode]);
+            return redirect()->back()->with('error', '無効なイベントコードです。');
         }
-    
-        // 顧客の参加イベント情報を取得
+
+        // イベント情報をログに記録
+        Log::info('Event Retrieved:', ['event' => $event]);
+
+        // イベントの有効期限を計算（終了日があればそれを基準に、なければ開催日から3日後）
+        $expirationDate = $event->end_date ? $event->end_date->addDays(3) : $event->event_date->addDays(3);
+        if (now()->gt($expirationDate)) {
+            // 現在日時が有効期限を過ぎている場合はエラーメッセージを返す
+            Log::error('Event Expired:', ['expiration_date' => $expirationDate]);
+            return redirect()->back()->with('error', 'このイベントのスタンプは有効期限切れです。');
+        }
+
+        // 顧客の参加情報を取得
         $customer = Customer::findOrFail($customerId);
-        $eventParticipations = $customer->eventParticipations;
-    
-        // イベントへの参加が既にあるかチェック
-        $existingParticipation = $eventParticipations->where('event_id', $event->id)->first();
-    
-        if (!$existingParticipation) {
-            // 新しい参加情報を作成
-            $participation = new EventParticipation([
-                'customer_id' => $customerId,
-                'event_id' => $event->id,
-                'participation_date' => now(),
-                'stamps_earned' => $event->stamp_count
-            ]);
-            $participation->save();
-    
-            // 顧客のstamp_countを更新
-            $customer->stamp_count += $event->stamp_count;
-            $customer->save();
+
+        // 既に同一イベントへの参加記録が存在するかをチェック
+        $existingParticipation = EventParticipation::where('customer_id', $customerId)
+                                                    ->where('event_id', $event->id)
+                                                    ->exists();
+        if ($existingParticipation) {
+            // 既に参加している場合はエラーメッセージを返す
+            Log::error('Event Already Participated:', ['customer_id' => $customerId, 'event_id' => $event->id]);
+            return redirect()->back()->with('error', 'すでに参加済みのイベントです。');
         }
-    
+
+        // 新しいイベント参加情報を作成して保存
+        $participation = new EventParticipation([
+            'customer_id' => $customerId,
+            'event_id' => $event->id,
+            'participation_date' => now(),
+            'stamps_earned' => $event->stamp_count
+        ]);
+        $participation->save();
+
+        // 顧客のスタンプ数を更新
+        $customer->stamp_count += $event->stamp_count;
+        $customer->save();
+
+        // アンケートURLが設定されている場合、セッションに保存して後で利用可能にする
+        if ($event->survey_url) {
+            session(['survey_url' => $event->survey_url]);
+            // セッションに保存したアンケートURLをログに記録
+            Log::info('Survey URL Stored in Session:', ['survey_url' => $event->survey_url]);
+        }
+
+        // 処理が完了した後、顧客をスタンプページにリダイレクト
         return redirect()->route('liff.stamp.index', ['customer_id' => $customerId]);
     }
 
     
+
+
     /**
      * プレゼント応募フォームを表示する
      *
@@ -129,6 +160,23 @@ class StampController extends Controller
      */
     public function applyForPresent(Request $request)
     {
+        // バリデーションルールの定義
+        $validatedData = $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'syubetsu_id' => 'required|numeric',
+            'present_id' => 'required|exists:presents,id',
+            'name' => 'required|string|max:255',
+            'name_kana' => 'required|string|max:255',
+            'tel' => 'required|digits_between:10,11', // 10または11桁の数字
+            'email' => 'required|email|max:255',
+            'zip' => 'required|regex:/^\d{7}$/', // 7桁の数字のみ
+            'prefecture' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'building' => 'nullable|string|max:255',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
         $customerId = $request->input('customer_id');
         $syubetsuId = $request->input('syubetsu_id'); // 応募するプレゼントの種別ID
     
@@ -173,7 +221,4 @@ class StampController extends Controller
     
         return redirect()->route('liff.stamp.index', ['customer_id' => $customerId])->with('success', 'プレゼントに応募しました！');
     }
-    
-     
-
 }

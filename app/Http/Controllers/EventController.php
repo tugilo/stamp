@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Event;
+use App\Models\EventParticipation;
 use App\Models\Organizer;
 use App\Models\Venue;
 use App\Models\Area;
@@ -13,6 +15,16 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EventController extends Controller
 {
+
+    /**
+     * コントローラーインスタンスの生成
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     /**
      * イベント一覧を表示する。論理削除されていないイベントのみを取得。
      *
@@ -161,7 +173,45 @@ class EventController extends Controller
      */
     public function export()
     {
-        return Excel::download(new EventsExport, 'events.xlsx');
+        $timestamp = now()->format('YmdHi'); // "202405061150" のような形式
+        $filename = $timestamp . '_events.xlsx';
+        return Excel::download(new EventsExport, $filename);
     }
+    /**
+     * 既存の顧客全員にお礼イベントを追加するメソッド。
+     * 顧客はUUIDがnullではない場合のみ対象とします。
+     * 同一顧客が同一イベントに複数回参加登録することを防ぐため、
+     * 重複チェックを行ってから登録します。
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function addThankYouEvent()
+    {
+        $customers = Customer::whereNotNull('uuid')->get(); // UUIDがnullでない顧客を取得
+        $event = Event::where('code', 7182)->first(); // codeが7182のイベントを取得
+
+        if (!$event) {
+            return back()->with('error', '指定されたイベントが存在しません。');
+        }
+
+        $addedCount = 0; // 追加されたイベントの数をカウント
+
+        foreach ($customers as $customer) {
+            // 二重登録を防ぐために、すでに登録されているかチェックする
+            $existingParticipation = EventParticipation::where('customer_id', $customer->id)->where('event_id', $event->id)->first();
+            if (!$existingParticipation) {
+                EventParticipation::create([
+                    'customer_id' => $customer->id,
+                    'event_id' => $event->id,
+                    'participation_date' => now(), // 現在の日時を設定
+                    'stamps_earned' => 1
+                ]);
+                $addedCount++; // 追加されたイベント数をインクリメント
+            }
+        }
+
+        return back()->with('success', "{$addedCount} 人の顧客にお礼イベントを追加しました。");
+    }
+    
 
 }

@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
@@ -10,6 +9,7 @@ use App\Http\Controllers\LiffController;
 use App\Http\Controllers\StampController;
 use App\Http\Controllers\PresentController;
 use App\Http\Controllers\SurveyResponseController;
+use App\Http\Controllers\CustomerPresentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,16 +46,22 @@ Route::resource('venues', VenueController::class);
 Route::resource('events', EventController::class)->except(['show']);
 
 // プレゼント管理用のCRUD操作ルート
-Route::resource('presents', PresentController::class);
+Route::resource('presents', PresentController::class)->except(['show']);
 
 // アンケート結果の一覧表示ルート
 Route::get('/survey/index', [SurveyResponseController::class, 'index'])->name('survey.index');  // 認証が必要
 
+// アンケート結果の一覧をExcelにエクスポートするためのルート
+Route::get('/survey/export', [SurveyResponseController::class, 'export'])->name('survey.export');
+
 // イベントの参加者数を表示するためのルート
 Route::get('/events/participations', [EventController::class, 'showParticipations'])->name('events.participations');
 
+// イベントの参加者数をExcelにエクスポートするためのルート
 Route::get('/events/export', [EventController::class, 'export'])->name('events.export');
 
+// イベント参加登録
+Route::post('/events/add-thank-you-event', [EventController::class, 'addThankYouEvent'])->name('events.add-thank-you-event');
 
 // LIFFアプリのメインページルート
 Route::get('/liff', [LiffController::class, 'index'])->name('liff.index');
@@ -69,7 +75,7 @@ Route::post('/liff/check', [LiffController::class, 'check'])->name('liff.check')
 // LIFFからのデータ保存用ルート
 Route::post('/liff/store', [LiffController::class, 'store'])->name('liff.store');
 
-// アンケートページ表示ルート
+// アンケートページ表示ルート（クエリパラメータで customer_id を取得）
 Route::get('/liff/survey', [LiffController::class, 'showSurvey'])->name('liff.survey.show');
 
 // アンケート回答保存ルート
@@ -86,3 +92,12 @@ Route::get('/liff/stamp/applyPresentForm/{customer_id}/{syubetsu_id}', [StampCon
 
 // プレゼント応募処理用ルート
 Route::post('/liff/stamp/apply-for-present', [StampController::class, 'applyForPresent'])->name('liff.stamp.applyForPresent');
+
+// セッションをクリアするルート
+Route::post('/liff/clear-session', [LiffController::class, 'clearSession'])->name('liff.clearSession');
+
+// プレゼント応募者一覧表示
+Route::get('/presents/applicants', [CustomerPresentController::class, 'index'])->name('presents.applicants');
+
+// プレゼント応募者一覧エクスポート
+Route::get('/presents/export', [CustomerPresentController::class, 'export'])->name('presents.export');

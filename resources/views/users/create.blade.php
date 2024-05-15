@@ -44,7 +44,12 @@
 
                 <div class="form-group">
                     <label for="password">パスワード</label>
-                    <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" required>
+                    <div class="input-group">
+                        <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" required>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary" id="generate-password">自動生成</button>
+                        </div>
+                    </div>
                     @error('password')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
@@ -65,8 +70,8 @@
                 <div class="form-group">
                     <label for="role_id">権限</label>
                     <select name="role_id" id="role_id" class="form-control @error('role_id') is-invalid @enderror" required>
+                        <option value="">{{ __('adminlte::adminlte.Select_a_role') }}</option>
                         @foreach ($roles as $role)
-                            <option value="">{{ __('adminlte::adminlte.Select_a_role') }}</option>
                             <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
                                 {{ $role->role_name }}
                             </option>
@@ -97,4 +102,26 @@
             </form>
         </div>
     </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('#generate-password').click(function() {
+                const password = generatePassword(12);
+                $('#password').val(password);
+                $('#password_confirmation').val(password);
+            });
+
+            function generatePassword(length) {
+                const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+                let password = "";
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * charset.length);
+                    password += charset[randomIndex];
+                }
+                return password;
+            }
+        });
+    </script>
 @stop

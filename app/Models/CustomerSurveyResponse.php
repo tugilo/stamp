@@ -9,93 +9,74 @@ class CustomerSurveyResponse extends Model
 {
     use HasFactory;
 
-    // モデルが使用するテーブル名を指定
     protected $table = 'customer_survey_responses';
-
-    // 代入禁止の属性（主にセキュリティ目的で保護）
     protected $guarded = ['id'];
 
-    /**
-     * 顧客とのリレーションを定義
-     * このリレーションにより、CustomerSurveyResponse インスタンスから関連する Customer インスタンスに簡単にアクセスできる
-     * 
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
+    // 顧客とのリレーション
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
-
-    /**
-     * 性別とのリレーション
-     */
+    // 性別とのリレーション
     public function gender()
     {
         return $this->belongsTo(Gender::class, 'gender_id');
     }
 
-    /**
-     * 年代グループとのリレーション
-     */
+    // 年代グループとのリレーション
     public function ageGroup()
     {
         return $this->belongsTo(AgeGroup::class, 'age_group_id');
     }
 
-    /**
-     * 居住地とのリレーション
-     */
+    // 居住地とのリレーション
     public function residence()
     {
         return $this->belongsTo(Residence::class, 'residence_id');
     }
 
-    /**
-     * キャンペーン発見きっかけとのリレーション
-     */
+    // キャンペーン発見きっかけとのリレーション
     public function discoveryTrigger()
     {
         return $this->belongsTo(DiscoveryTrigger::class, 'discovery_trigger_id');
     }
 
+    // キャンペーン発見きっかけのカスタムレスポンスとのリレーション
     public function discoveryCustomResponses()
     {
         return $this->hasMany(DiscoveryCustomResponse::class, 'survey_response_id');
     }
 
-
-    /**
-     * info_category_ids 属性のセッター
-     * 配列をカンマ区切りの文字列に変換してデータベースに保存するために使用
-     *
-     * @param array $value 設定する値（配列形式）
-     */
-    public function setInfoCategoryIdsAttribute($value)
+    // 情報カテゴリのカスタムレスポンスとのリレーション
+    public function infoCustomResponses()
     {
-        // 値が文字列の場合、カンマで分割して配列に変換
-        if (is_string($value)) {
-            $value = explode(',', $value);
-        }
-    
-        // 値が配列の場合のみimplodeを使用
-        if (is_array($value)) {
-            $this->attributes['info_category_ids'] = implode(',', $value);
-        } else {
-            // 配列でも文字列でもない場合は、ログを出力してデバッグ
-            Log::warning('Unexpected type for info_category_ids', ['value' => $value]);
-        }
+        return $this->hasMany(InfoCustomResponse::class, 'survey_response_id');
     }
-    
-    /**
-     * info_category_ids 属性のゲッター
-     * データベースにカンマ区切りの文字列として保存されている値を配列に変換して返す
-     *
-     * @param string $value データベースから取得する文字列
-     * @return array カンマで分割された文字列を配列に変換したもの
-     */
+
+    // info_category_ids を配列で取得・設定
     public function getInfoCategoryIdsAttribute($value)
     {
         return explode(',', $value);
+    }
+
+    public function setInfoCategoryIdsAttribute($value)
+    {
+        $this->attributes['info_category_ids'] = is_array($value) ? implode(',', $value) : $value;
+    }
+
+    // カテゴリ名の取得
+    public function getInfoCategoryNamesAttribute()
+    {
+        return InfoCategory::whereIn('id', $this->info_category_ids)->get()->pluck('name')->toArray();
+    }
+    
+    // 「その他」のカスタム情報テキストの取得
+    public function getCustomInfoTextAttribute()
+    {
+        if (in_array('その他', $this->info_category_names)) {
+            return $this->infoCustomResponses->first()->text ?? 'N/A';
+        }
+        return 'N/A';
     }
 }

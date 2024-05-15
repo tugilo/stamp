@@ -24,7 +24,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $events = Event::all(); // すべてのイベントを取得
+        $events = Event::where('show_flg', 1)->get(); // show_flgが1のイベントのみを取得
         return view('home', compact('events')); // ビューにイベントデータを渡す
     }
 
@@ -33,7 +33,7 @@ class HomeController extends Controller
      */
     public function events()
     {
-        $events = Event::all()->map(function ($event) {
+        $events = Event::where('show_flg', 1)->get()->map(function ($event) {
             return [
                 'title' => $event->event_name,
                 'start' => $event->event_date,
@@ -44,4 +44,6 @@ class HomeController extends Controller
 
         return response()->json($events);
     }
+
+
 }

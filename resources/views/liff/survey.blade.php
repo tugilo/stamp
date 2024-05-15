@@ -2,7 +2,47 @@
 
 @section('css')
 <style>
-    /* 追加のCSSスタイルをここに記述 */
+    /* 背景画像の設定 */
+    body {
+        background-image: url(/images/bg-main.png?timestamp={{ date('YmdHis') }});
+    }
+    /* カードスタイルの設定 */
+    .card-custom {
+        background-color: rgba(255, 255, 255, 0.9); // 半透明の白色
+        border-radius: 15px; // 角の丸み
+        padding: 20px; // 内側の余白
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // 影の設定
+        margin: 20px; // 外側の余白
+    }
+    /* フォームコントロールのスタイル調整 */
+    .form-control {
+        border-radius: 5px; // フィールドの角の丸み
+        margin-bottom: 15px; // フィールド間の間隔
+    }
+    /* ラベルのスタイル調整 */
+    .form-group label {
+        font-weight: bold; // フォントの太さ
+        display: block; // ブロックレベルで表示
+        margin-bottom: 5px; // ラベルとフィールド間の間隔
+    }
+    /* ボタンのスタイル調整 */
+    .btn-primary {
+        width: 100%; // 幅を100%に設定
+        padding: 10px; // パディング
+        font-size: 18px; // フォントサイズ
+    }
+    /* アラートのスタイル調整 */
+    .alert {
+        margin-bottom: 20px; // アラート下の余白
+    }
+    /* エラーがあったフィールドのスタイル */
+    .error-field {
+        border: 2px solid #dc3545; /* 赤色の境界線 */
+        background-color: #f8d7da; /* 薄い赤色の背景 */
+    }
+    .badge{
+        margin-left: 5px;
+    }
 </style>
 @endsection
 
@@ -25,9 +65,9 @@
 
                     <!-- 性別 -->
                     <div class="form-group row">
-                        <label for="gender_id" class="col-4 col-form-label">性別</label>
+                        <label for="gender_id" class="col-4 col-form-label">性別<span class="badge bg-danger">必須</span></label>
                         <div class="col-8">
-                            <select class="form-control" name="gender_id" id="gender_id">
+                            <select class="form-control {{ $errors->has('gender_id') ? 'error-field' : '' }}" name="gender_id" id="gender_id">
                                 <option value="">-選択してください-</option>
                                 @foreach($genders as $gender)
                                 <option value="{{ $gender->id }}">{{ $gender->name }}</option>
@@ -38,9 +78,9 @@
 
                     <!-- 年代 -->
                     <div class="form-group row mt-2">
-                        <label for="age_group_id" class="col-4 col-form-label">年代</label>
+                        <label for="age_group_id" class="col-4 col-form-label">年代<span class="badge bg-danger">必須</span></label>
                         <div class="col-8">
-                            <select class="form-control" name="age_group_id" id="age_group_id">
+                            <select class="form-control {{ $errors->has('age_group_id') ? 'error-field' : '' }}" name="age_group_id" id="age_group_id">
                                 <option value="">-選択してください-</option>
                                 @foreach($ageGroups as $ageGroup)
                                 <option value="{{ $ageGroup->id }}">{{ $ageGroup->name }}</option>
@@ -51,9 +91,9 @@
 
                     <!-- お住まいの場所 -->
                     <div class="form-group row mt-3 align-items-center">
-                        <label class="col-4 col-form-label align-middle">お住まいの場所</label>
+                        <label class="col-4 col-form-label align-middle">お住まいの場所<span class="badge bg-danger">必須</span></label>
                         <div class="col-8">
-                            <select class="form-control" name="residence_id" id="residence_id">
+                            <select class="form-control {{ $errors->has('residence_id') ? 'error-field' : '' }}" name="residence_id" id="residence_id">
                                 <option value="">-選択してください-</option>
                                 @foreach($residences as $residence)
                                 <option value="{{ $residence->id }}">{{ $residence->name }}</option>
@@ -106,17 +146,14 @@
                         </div>
                     </div>
 
-                    <div class="mx-auto my-2">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check"></i> 登録してスタンプラリーを始める
-                    </button>
+                    <div class="d-flex justify-content-center my-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> 登録してスタンプラリーを始める
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
-        @else
-        <div class="text-center">
-            <a href="{{ route('liff.stamp.index') }}" class="btn btn-primary">スタンプ台紙を表示する</a>
-        </div>
         @endif
     </div>
 </main>
@@ -125,6 +162,7 @@
 @section('js')
 <script>
     $(document).ready(function() {
+
         // 本キャンペーンを知ったきっかけ
         $('#discovery_trigger_id').change(function() {
             var selectedValue = $(this).val();

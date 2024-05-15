@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserRegistered;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -26,7 +28,8 @@ class UserController extends Controller
             'mail_flg' => 'required|boolean',
         ]);
     
-        User::create([
+        // ユーザーを作成し、作成したユーザーオブジェクトを取得
+        $user = User::create([
             'name' => $request->name,
             'name_kana' => $request->name_kana,
             'email' => $request->email,
@@ -34,7 +37,9 @@ class UserController extends Controller
             'role_id' => $request->role_id,
             'mail_flg' => $request->mail_flg,
         ]);
-    
+        // ユーザーにアカウント情報をメールで送信
+        Mail::to($user->email)->send(new UserRegistered($user, $request->password));
+
         return redirect()->route('users.index')->with('success', '新しいユーザーが登録されました。');
     }
 

@@ -39,6 +39,12 @@
     <div class="card">
         <div class="card-header">
             <a href="{{ route('events.create') }}" class="btn btn-primary">新規登録</a>
+            <!-- お礼イベント追加ボタン -->
+            <form action="{{ route('events.add-thank-you-event') }}" method="POST" style="display: inline;">
+                @csrf
+                <button type="submit" class="btn btn-success" onclick="return confirm('既存のすべてのユーザーにお礼イベントを追加しますか？')">お礼イベント追加</button>
+            </form>
+
         </div>
         <div class="card-body">
             <table class="table table-bordered" id="events-table">

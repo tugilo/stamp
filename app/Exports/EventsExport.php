@@ -5,8 +5,9 @@ namespace App\Exports;
 use App\Models\Event;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 
-class EventsExport implements FromQuery, WithHeadings
+class EventsExport implements FromQuery, WithHeadings, WithMapping
 {
     /**
      * エクスポートするイベントデータのクエリを定義。
@@ -26,14 +27,14 @@ class EventsExport implements FromQuery, WithHeadings
     public function headings(): array
     {
         return [
-            'ID', 'イベント名', '主催者名', '会場名', '開催日', '終了日', 'スタンプ数', '表示フラグ'
+            'イベントID', 'イベント名', '開催日', '終了日', '利用者数'
         ];
     }
 
     /**
      * 各イベントデータをマッピングし、エクセルの列に合わせる。
      *
-     * @param  mixed  $event
+     * @param  Event  $event
      * @return array
      */
     public function map($event): array
@@ -41,12 +42,9 @@ class EventsExport implements FromQuery, WithHeadings
         return [
             $event->id,
             $event->event_name,
-            optional($event->organizer)->name,
-            optional($event->venue)->name,
             $event->event_date->format('Y年m月d日'),
             optional($event->end_date)->format('Y年m月d日'),
-            $event->stamp_count,
-            $event->show_flg ? '表示' : '非表示'
+            $event->participations()->count()  // イベントごとの参加者数を集計
         ];
     }
 }

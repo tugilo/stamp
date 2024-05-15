@@ -314,6 +314,11 @@ return [
             'url'  => 'events/participations',
             'icon' => 'fas fa-fw fa-users',
         ],
+        [
+            'text' => 'プレゼント応募一覧',
+            'url'  => '/presents/applicants',
+            'icon' => 'fas fa-fw fa-gift',
+        ],
 
         // イベント管理
         [
